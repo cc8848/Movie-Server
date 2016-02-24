@@ -1,6 +1,7 @@
 public class MoviePage {
 	
-	public MoviePage() {
+	public MoviePage(UI uI) {
+		this.uI = uI;
 	}
 	
 	public String genMoviePage(String movie) {
@@ -9,15 +10,17 @@ public class MoviePage {
 	}
 	
 	public String embedMovie(String movie) {
+		uI.println("Watching: " + movie.split("/")[1]);
 		movie = movie.replace("?watch=1", "");
 		return "<video width=100% height=100% id=\"" + getFromOtherHost(movie) + "\" src=\"" + getFromOtherHost(movie) + "\" controls></video>";
 	}
 	
 	public String getFromOtherHost(String movie) {
 		movie = movie.replaceFirst("/", "");
-		return "http://192.168.0.182:9002/H%3A/" + movie;
+		return uI.config.getMovieLinkback() + movie;
 	}
 	
 	public String startHTML = "<html>";
 	public String endHTML = "</html>";
+	public UI uI;
 }

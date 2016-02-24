@@ -8,6 +8,7 @@ public class HTMLFList {
 	}
 	
 	public String generateHTMLListDoc(String folder) {
+		uI.println("Sent folder index for: " + folder);
 		String doc = startHTML + lineBreak;
 		File[] files = listFiles(folder);
 		int toSkip = 0;
@@ -29,12 +30,20 @@ public class HTMLFList {
 			doc = doc + lineBreak;
 			doc = doc + lineBreak;
 		}
-		doc = doc + "<b>Movies: </b>";
-		doc = doc + lineBreak;
+		boolean hasMovies = false;
 		for(File file: files) {
 			if (file.isFile() && file.getName().contains("mp4")) {
-				doc = doc + fileAsLink(file.getName()) + lineBreak;
+				if (!hasMovies) {
+					hasMovies = true;
+					doc = doc + "<b>Movies: </b>";
+					doc = doc + lineBreak;
+				}
+				doc = doc + buttonForDL(file.getName(), fileAsLink(file.getName())) + lineBreak;
+				//doc = doc + buttonForDL(file.getName()) + fileAsLink(file.getName()) + lineBreak;
 			}
+		}
+		if (hasMovies == false && hasDirectories == false) {
+			doc = doc + "<b>Nothing to display here...</b>";
 		}
 		doc = doc + endHTML;
 		System.out.println("Sending List...");
@@ -47,6 +56,10 @@ public class HTMLFList {
 		} else {
 			return "<a href=\"" + file + "\">" + file + "<a>";
 		}
+	}
+	
+	public String buttonForDL(String file, String link) {
+		return "<form action=\"" + file + "\"> <input type=\"submit\" value=\"DL\">" + link + "</form>";
 	}
 	
 	public File[] listFiles(String folder) {

@@ -21,6 +21,10 @@ public class Config {
 		return Integer.parseInt(configs.getProperty("Port"));
 	}
 	
+	public String getMovieLinkback() {
+		return configs.getProperty("Linkback");
+	}
+	
 	public UI uI;
 	public Properties configs;
 }

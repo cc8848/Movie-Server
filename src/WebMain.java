@@ -22,6 +22,7 @@ public class WebMain {
 			serverSocket = new ServerSocket(uI.config.getPort());
 		} catch (Exception e) {
 			uI.println("Error: " + e);
+			e.printStackTrace();
 			return;
 		}
 		uI.println("Waiting for connection");
@@ -36,6 +37,7 @@ public class WebMain {
 				}).start();
 			} catch (Exception e) {
 				uI.println("Error: " + e);
+				e.printStackTrace();
 			}
 		}
 	}
@@ -53,6 +55,7 @@ public class WebMain {
 			}*/
 		} catch (Exception e) {
 			uI.println("Error: " + e);
+			e.printStackTrace();
 		}
 	}
 	
@@ -88,11 +91,12 @@ public class WebMain {
 			}
 		} catch (Exception e) {
 			uI.println("Error: " + e);
+			e.printStackTrace();
 		}
 	}
 	
 	public void handleMoviePage(Socket remote, String requestedMovie) {
-		sendGeneratedHTML(remote, new MoviePage().genMoviePage(requestedMovie));
+		sendGeneratedHTML(remote, new MoviePage(uI).genMoviePage(requestedMovie));
 	}
 	
 	public String fixHTMLLinked(String fix) {
@@ -102,19 +106,22 @@ public class WebMain {
   
 	public void sendGeneratedHTML(Socket remote, String dataToWrite) {
 		try {
-			uI.println("Send folder index.");
 			OutputStream out = remote.getOutputStream();
 			out.write(dataToWrite.getBytes());
 			out.flush();
 			remote.close();
 		} catch (Exception e) {
 			uI.println("Error: " + e);
+			e.printStackTrace();
 		}
 	}
   
 	public void sendFile(String file, Socket remote) {
 		try {
-			uI.println("Sent file: " + file);
+			if (file.endsWith(".mp4?")) {
+				file = file.replace(".mp4?", ".mp4");
+			}
+			uI.println("Sending file: " + file + "...");
 			File fileToSend = new File(uI.config.getSite() + file);
 			BufferedInputStream d =new BufferedInputStream(new FileInputStream(fileToSend));
 			BufferedOutputStream outStream = new BufferedOutputStream(remote.getOutputStream());
@@ -126,7 +133,9 @@ public class WebMain {
 				
 				outStream.write("Connection: close\r\n".getBytes());
 				outStream.write(("Content-Length: " + fileToSend.length() + "\r\n").getBytes());
-				outStream.write("Content-Type: application/octet-stream\r\n".getBytes());
+				String contentType = "Content-Type: " + getMimeType(fileToSend.getName()) + "\r\n";
+				System.out.println(getMimeType(fileToSend.getName()));
+				outStream.write(contentType.getBytes());
 				outStream.write(("Content-Disposition: attachment; filename=\"" + fileToSend.getName() + "\"\r\n").getBytes());
 				outStream.write("\r\n".getBytes());
 			}
@@ -138,10 +147,36 @@ public class WebMain {
 			}
 			d.close();
 			remote.close();
-			uI.println("Done...");
+			uI.println("Sent file: " + file + "...");
 		} catch (Exception e) {
-			uI.println("Error: " + e);
+			uI.println("Error when sending file: " + e);
+			e.printStackTrace();
 		}
+	}
+	
+	public String getMimeType(String extension) {
+		if (extension.endsWith("mp4")) {
+			return "video/mp4";
+		}
+		if (extension.endsWith("html")) {
+			return "text/html";
+		}
+		if (extension.endsWith("txt")) {
+			return "text/html";
+		}
+		if (extension.endsWith("ico")) {
+			return "image/x-icon";
+		}
+		if (extension.endsWith("png")) {
+			return "image/png";
+		}
+		if (extension.endsWith("jpg")) {
+			return "image/jpeg";
+		}
+		if (extension.endsWith("gif")) {
+			return "image/gif";
+		}
+		return "application/octet-stream";
 	}
 	
 	public Boolean running = false;
